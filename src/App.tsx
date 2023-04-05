@@ -1,71 +1,85 @@
+import { Refine } from "@refinedev/core";
 import {
-  Refine,
-  GitHubBanner,
-  WelcomePage,
-  Authenticated,
-} from "@refinedev/core";
-import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
-
-import {
-  AuthPage,
-  ErrorComponent,
-  notificationProvider,
-  RefineSnackbarProvider,
-  ThemedLayout,
+    Layout,
+    ErrorComponent,
+    LightTheme,
+    RefineSnackbarProvider,
+    notificationProvider,
 } from "@refinedev/mui";
-
-import { CssBaseline, GlobalStyles } from "@mui/material";
-import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
+import { CssBaseline, GlobalStyles, ThemeProvider } from "@mui/material";
 import routerBindings, {
-  NavigateToResource,
-  CatchAllNavigate,
-  UnsavedChangesNotifier,
+    NavigateToResource,
+    UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
 import dataProvider from "@refinedev/simple-rest";
-import {
-  BlogPostList,
-  BlogPostCreate,
-  BlogPostEdit,
-  BlogPostShow,
-} from "pages/blog-posts";
-import {
-  CategoryList,
-  CategoryCreate,
-  CategoryEdit,
-  CategoryShow,
-} from "pages/categories";
-import { ColorModeContextProvider } from "./contexts/color-mode";
-import { Header } from "./components/header";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { MuiInferencer } from "@refinedev/inferencer/mui";
 
-function App() {
-  return (
-    <BrowserRouter>
-      <GitHubBanner />
-      <RefineKbarProvider>
-        <ColorModeContextProvider>
-          <CssBaseline />
-          <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
-          <RefineSnackbarProvider>
-            <Refine
-              notificationProvider={notificationProvider}
-              routerProvider={routerBindings}
-              dataProvider={dataProvider("https://api.fake-rest.refine.dev")}
-              options={{
-                syncWithLocation: true,
-                warnWhenUnsavedChanges: true,
-              }}
-            >
-              <Routes>
-                <Route index element={<WelcomePage />} />
-              </Routes>
-              <RefineKbar />
-              <UnsavedChangesNotifier />
-            </Refine>
-          </RefineSnackbarProvider>
-        </ColorModeContextProvider>
-      </RefineKbarProvider>
-    </BrowserRouter>
-  );
-}
+const App: React.FC = () => {
+    return (
+        <ThemeProvider theme={LightTheme}>
+            <CssBaseline />
+            <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
+            <RefineSnackbarProvider>
+                <BrowserRouter>
+                    <Refine
+                        routerProvider={routerBindings}
+                        dataProvider={dataProvider(
+                            "https://api.fake-rest.refine.dev",
+                        )}
+                        notificationProvider={notificationProvider}
+                        resources={[
+                            {
+                                name: "blog_posts",
+                                list: "/blog-posts",
+                                show: "/blog-posts/show/:id",
+                                create: "/blog-posts/create",
+                                edit: "/blog-posts/edit/:id",
+                            },
+                        ]}
+                        options={{
+                            syncWithLocation: true,
+                            warnWhenUnsavedChanges: true,
+                        }}
+                    >
+                        <Routes>
+                            <Route
+                                element={
+                                    <Layout>
+                                        <Outlet />
+                                    </Layout>
+                                }
+                            >
+                                <Route
+                                    index
+                                    element={
+                                        <NavigateToResource resource="blog_posts" />
+                                    }
+                                />
+                                <Route path="blog-posts">
+                                    <Route index element={<MuiInferencer />} />
+                                    <Route
+                                        path="show/:id"
+                                        element={<MuiInferencer />}
+                                    />
+                                    <Route
+                                        path="edit/:id"
+                                        element={<MuiInferencer />}
+                                    />
+                                    <Route
+                                        path="create"
+                                        element={<MuiInferencer />}
+                                    />
+                                </Route>
+                                <Route path="*" element={<ErrorComponent />} />
+                            </Route>
+                        </Routes>
+                        <UnsavedChangesNotifier />
+                    </Refine>
+                </BrowserRouter>
+            </RefineSnackbarProvider>
+        </ThemeProvider>
+    );
+};
 
 export default App;
